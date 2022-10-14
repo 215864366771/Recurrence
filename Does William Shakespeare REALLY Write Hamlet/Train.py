@@ -82,7 +82,7 @@ class TrainTriples:
             with torch.cuda.device(self.args.gpunum):
                 self.model.cuda()
 
-    def load_pretrain_transE_embedding(self):
+    def load_pretrain_embedding(self):
         if self.args.modelname == "CKRL":
             print("="*20+"INFO : Loading pre-training entity and relation embedding"+"="*20)
             self.model.initialWeight(entityEmbedFile=self.args.entity_vec_file_path,
@@ -136,6 +136,7 @@ class TrainTriples:
         for seed in range(100):
             print("INFO : Using seed %d" % seed)
             self.dataloader = prepare_dataloader(self.args, repSeed=seed, exSeed=seed, headSeed=seed, tailSeed=seed)
+            self.evalloader = prepare_eval_dataloader(self.args)
             for epoch in range(EPOCHS):
                 GLOBALEPOCH += 1
                 STEP = 0
@@ -241,7 +242,7 @@ if __name__ == "__main__":
     model.creat_model()
     #confirm whether to use pre-train TransE embedding
     if args.loadembed:
-        model.load_pretrain_transE_embedding()
+        model.load_pretrain_embedding()
     model.fit()
 
     sumWriter.close()

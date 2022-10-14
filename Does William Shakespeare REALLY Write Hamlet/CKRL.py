@@ -96,7 +96,7 @@ class CKRL(nn.Module):
         LT = judge_LT(Q)
 
         #Global Path Confidence:Prior Path Confidence PP
-        p_i = self.get_sample
+        #p_i = self.
 
         #Global Path Confidence:Adaptive Path Confidence AP
 

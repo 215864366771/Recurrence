@@ -30,23 +30,27 @@ class TrainConfig:
 		self.repproba = 0.5
 		self.exproba = 0.5
 		# Model and training general arguments
+		self.modelname = "CKRL"
 		self.CKRL = {
 			"EmbeddingDim": 100,
 			"Margin": 1.0,
 			"L": 2}
 		self.usegpu = torch.cuda.is_available()
-		self.gpunum = 0
-		self.modelname = "CKRL"
+		self.premodel = False
 		self.weightdecay = 0
+
 		self.epochs = 5
 		self.evalepoch = 1
 		self.learningrate = 0.01
 		self.lrdecay = 0.96
 		self.lrdecayepoch = 5
 		self.optimizer = "Adam"
+		# Evaluation arguments
 		self.evalmethod = "MREvaluation_CKRL"
 		self.simmeasure = "L2"
+		# Save model arguments
 		self.modelsave = "param"
+
 
 
 
