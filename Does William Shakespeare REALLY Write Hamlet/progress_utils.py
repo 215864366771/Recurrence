@@ -166,7 +166,6 @@ class Data_utils():
 			plt.show()
 		return graph
 
-
 class Evaluation:
 	def __init__(self):
 		pass

@@ -37,7 +37,7 @@ Evaluation类为评估函数,用于评估训练好向量的质量
 
 ###### nx_utils.py
 提供了针对数据进行networkx库提供的graph类实例操作
-1. [ ] (!!未完成!!)将构造的networkx.graph类实例对象输入执行kshell算法
+1. [x] 将构造的networkx.graph类实例对象输入执行kshell算法
 2. [x] 将构造的networkx.graph类实例对象和头实体尾实体输入返回其所有路径,可用于求PCRA算法中的资源量
 ##### dataloader:
 ###### dataloader.py
