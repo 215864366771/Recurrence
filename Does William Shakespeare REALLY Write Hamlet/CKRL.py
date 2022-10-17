@@ -9,24 +9,29 @@ import torch.nn as nn
 import torch.nn.functional as F
 #=========自定义文件import============
 from progress_utils import Data_utils
+from nx_utils import Networkx_utils
 from dataloader import TripleDataset
 
 class CKRL(nn.Module):
-    def __init__(self,entity_id_file_path,relation_id_file_path,w2v_dim,margin=1.0, L=2):
+    def __init__(self,entity_id_file_path,relation_id_file_path,data_file_path,w2v_dim,margin=1.0,L=2):
         super(CKRL,self).__init__()
         self.model = "CKRL"
         self.w2v_dim = w2v_dim
-
-        #γ ( used to L = ∑ ∑ max( (E(h,r,l)-E(h',r',l')+γ)*C(h,r,l) ), 0) )
-        self.margin = margin
-
         # L2 dis:||h+r-l||
         assert (L == 1 or L == 2)
         self.L = L
         self.distfn = nn.PairwiseDistance(L)
+        #utils object
+        self.nx_utils = Networkx_utils(data_file_path=data_file_path, args=self.data_utils)
+        self.data_utils = Data_utils(entity_id_file_path,relation_id_file_path)
+        #embedding object
+        self.entityEmbedding,self.relationEmbedding = self.data_utils.get_embedding_object(self.w2v_dim)
 
-        data_utils = Data_utils(entity_id_file_path,relation_id_file_path)
-        self.entityEmbedding,self.relationEmbedding = data_utils.get_embedding_object(self.w2v_dim)
+
+        # γ ( used to L = ∑ ∑ max( (E(h,r,l)-E(h',r',l')+γ)*C(h,r,l) ), 0) )
+        self.margin = margin
+        # LT Initial value
+        self.LT = 1
 
     '''
     get E(h,r,l) and E(h',r',l')-----------------------------------------
@@ -83,8 +88,8 @@ class CKRL(nn.Module):
     ==> β:(β>0)a hyper-parameters that control the ascend or descend pace of local triple confidence,with the assurance that LT (h, r, t) ∈ (0, 1]
     ==> LT:(LT (h, r, t) ∈ (0, 1]) Local Triple Confidence
     '''
-    def forward(self, posX, negX,α,β,LT=1,):
-        size = posX.size()[0]
+    def forward(self, posX, negX,alpha,beta,sigma):
+        size = posX.size()[0]   #batch size
         #get E(h,r,t) score and E(h',r',t') score
         posEScore = self.scoreOp(posX)
         negEScore = self.scoreOp(negX)
@@ -92,13 +97,41 @@ class CKRL(nn.Module):
         #get C(h,r,t) score-------------------------------
         #Local Triple Confidence:LT
         Q = -(posEScore - negEScore + self.margin)
-        judge_LT = lambda Q:[α*LT,LT+β][Q <= 0]
-        LT = judge_LT(Q)
+
+        LT = np.ones(size)  #Initial LT value = [1,1,1,1.....] size=(batchsize,1)
+        def judge_LT(q,lt):
+            mask_array = torch.gt(q,torch.zeros(size,1)).numpy()
+            for mask_id,mask in enumerate(mask_array):
+                if mask:
+                    lt[mask_id] += beta
+                else:
+                    lt[mask_id] *= alpha
+            return torch.from_numpy(lt)
+        LT = judge_LT(Q,LT)        #size = (batch_size,1) ,the vector of this batch's LT
+
+        #judge_LT = np.frompyfunc(lambda Q:[alpha*LT,LT+beta][Q.gt(0)],1,1)  #α=0.9,β=0.0001,此函数类似于pd.apply
+
 
         #Global Path Confidence:Prior Path Confidence PP
-        #p_i = self.
+        head_batch_array,relation_batch_array,tail_batch_array = torch.chunk(input=posX,chunks=3,dim=1)
+        head_batch_array,tail_batch_array = head_batch_array.numpy(),tail_batch_array.numpy()
+        PP_i_list = []
+        for head,tail in zip(head_batch_array,tail_batch_array):
+            PP_i = 0
+            p_i_list = self.nx_utils.found_path(head,tail)
+            for p_i in p_i_list:
+                Q_PP = sigma + (1 - sigma) * 1 / len(p_i_list)
+                R_pi = self.nx_utils.PCRA(p_i)
+                PP_i += Q_PP*R_pi
+            PP_i_list.append(PP_i)
+        PP = torch.tensor(PP_i_list)
 
         #Global Path Confidence:Adaptive Path Confidence AP
+        relation_embedding = torch.squeeze(self.relationEmbedding(relation_batch_array), dim=1)
+
+
+
+
 
 
 

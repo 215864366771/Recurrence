@@ -159,8 +159,8 @@ class Data_utils():
 		else:
 			one_hot_data_list = open("onehot.txt").readlines()
 		graph = nx.DiGraph()
-		h_l_list = [(int(data.split("\t")[0]),int(data.split("\t")[2][:-1])) for data in one_hot_data_list]
-		graph.add_edges_from(h_l_list)
+		h_t_r_list = [(int(data.split("\t")[0]),int(data.split("\t")[2][:-1]),int(data.split("\t")[1])) for data in one_hot_data_list]
+		graph.add_weighted_edges_from(ebunch_to_add=h_t_r_list)
 		if show:
 			nx.draw(graph,node_size=5,with_labels=True)
 			plt.show()
@@ -224,12 +224,12 @@ class Evaluation:
 if __name__ == "__main__":
 	data_utiles = Data_utils(entity_id_file_path="FB15k-237/entity2id.txt",
 							 relation_id_file_path="FB15k-237/relation2id.txt")
-	data_utiles.get_nx_graph(data_file_path="FB15k-237/divided dataset/train.txt",
-							 show=True)
+	#data_utiles.get_nx_graph(data_file_path="FB15k-237/divided dataset/train.txt",
+							 #show=True)
 
 
-	data_utiles.one_hot(data_file_path="FB15k-237/divided dataset/train.txt",
-						save=False,
+	data_utiles.one_hot(data_file_path="FB15k-237/few simple dataset/train.txt",
+						save=True,
 						one_hot_file_path="onehot.txt")
 
 	'''

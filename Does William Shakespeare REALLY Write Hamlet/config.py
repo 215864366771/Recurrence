@@ -23,7 +23,7 @@ class TrainConfig:
 		self.summarydir = load_path_dict["summary_dir"]
 
 		# Dataloader arguments
-		self.batchsize = 128
+		self.batchsize = 9
 		self.shuffle = True
 		self.numworkers = 0
 		self.droplast = False

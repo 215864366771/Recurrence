@@ -71,6 +71,7 @@ class TrainTriples:
         if self.args.modelname == "CKRL":
             self.model = CKRL(entity_id_file_path = self.args.entity_id_file_path,
                               relation_id_file_path = self.args.relation_id_file_path,
+                              data_file_path =self.args.train_data_file_path,
                               w2v_dim = self.args.CKRL["EmbeddingDim"],
                               margin = self.args.CKRL["Margin"],
                               L = self.args.CKRL["L"]
