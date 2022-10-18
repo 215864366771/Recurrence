@@ -81,18 +81,10 @@ class Networkx_utils:
         return resource  #从此路径到达尾实体的资源量
 
     def search_relation(self,p_i:list):
-        '''
-        r_list = p_i_list.pop(0)
-        r = self.graph[r_list[0]][r_list[1]]["weight"]
-        if len(p_i_list) != 0:
-            for p_i in p_i_list:
-                r_i_k_list = []
-                for idx in range(len(p_i)-1):
-                    e_i_k = p_i[idx]
-                    e_i_k_next = p_i[idx+1]
-                    r_i_k = self.graph[e_i_k][e_i_k_next]["weight"]
-                    r_i_k_list.append(r_i_k)
-        '''
+        """
+        :param p_i: 路径列表
+        :return: 此路径的关系列表
+        """
         r_i_k_list = []
         for idx in range(len(p_i) - 1):
             e_i_k = p_i[idx]

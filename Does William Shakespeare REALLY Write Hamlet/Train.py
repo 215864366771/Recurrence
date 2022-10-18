@@ -161,7 +161,7 @@ class TrainTriples:
                     """
                     loss = self.model(posX,negX,alpha=0.9,beta=0.0001,sigma=0.8,lambda1=1.5,lambda2=0.1,lambda3=0.4)
                     if self.args.usegpu:
-                        lossVal = loss.cuda().item()
+                        lossVal = loss.cuda().item()    #this batch's valation
                     else:
                         lossVal = loss.item()
 

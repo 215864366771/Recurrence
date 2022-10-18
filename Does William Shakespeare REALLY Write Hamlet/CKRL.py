@@ -85,9 +85,10 @@ class CKRL(nn.Module):
     ==> posX : (torch.tensor)The positive triples tensor, shape(batch_size, 3)
     ==> negX : (torch.tensor)The negative triples tensor, shape(batch_size, 3)
     --------------------------------------------------------------------------
-    ==> α:(α ∈ (0, 1))a hyper-parameters that control the ascend or descend pace of local triple confidence,with the assurance that LT (h, r, t) ∈ (0, 1]
-    ==> β:(β>0)a hyper-parameters that control the ascend or descend pace of local triple confidence,with the assurance that LT (h, r, t) ∈ (0, 1]
-    ==> LT:(LT (h, r, t) ∈ (0, 1]) Local Triple Confidence
+    ==> alpha:(α ∈ (0, 1))a hyper-parameters that control the ascend or descend pace of local triple confidence,with the assurance that LT (h, r, t) ∈ (0, 1],default is 0.9
+    ==> beta:(β>0)a hyper-parameters that control the ascend or descend pace of local triple confidence,with the assurance that LT (h, r, t) ∈ (0, 1],default is 0.0001
+    ==> sigma:a hyper-parameter of Q_pp for smoothing.default is 0.8
+    ==> lambda1,lambda2,lambda3:the hyper-parameters for control overall triple confidence,default is 1.5,0.1,0.4
     '''
     def forward(self, posX, negX,alpha,beta,sigma,lambda1,lambda2,lambda3):
         size = posX.size()[0]               #batch size
@@ -111,7 +112,6 @@ class CKRL(nn.Module):
         LT = judge_LT(Q,LT).cuda()  #size = (batch_size,1) ,the vector of this batch's LT
 
         #judge_LT = np.frompyfunc(lambda Q:[alpha*LT,LT+beta][Q.gt(0)],1,1)  #α=0.9,β=0.0001,此函数类似于pd.apply
-
 
         #Global Path Confidence:Prior Path Confidence PP
         head_batch_tensor,relation_batch_tensor,tail_batch_tensor = torch.chunk(input=posX,chunks=3,dim=1)
@@ -184,6 +184,7 @@ class CKRL(nn.Module):
                 embed = np.array(embed.split(","), dtype=float)
                 if rel in entityDict:
                     self.relationEmbedding.weight.data[relationDict[rel]].copy_(torch.from_numpy(embed))
+
 
 if __name__ == "__main__":
     print("="*20+"test"+"="*20)
