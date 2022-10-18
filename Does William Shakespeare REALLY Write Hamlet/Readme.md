@@ -37,8 +37,10 @@ Evaluation类为评估函数,用于评估训练好向量的质量
 
 ###### nx_utils.py
 提供了针对数据进行networkx库提供的graph类实例操作
-1. [x] 将构造的networkx.graph类实例对象输入执行kshell算法
-2. [x] 将构造的networkx.graph类实例对象和头实体尾实体输入返回其所有路径,可用于求PCRA算法中的资源量
+1. 将构造的networkx.graph类实例对象输入执行kshell算法
+2. 将构造的networkx.graph类实例对象和头实体尾实体输入返回其所有路径,可用于求PCRA算法中的资源量
+3. 输入一路径pi,返回论文中R(h,pi,t)的值
+4. 输入一路径pi，返回该路径所经过的ri,即[e0->e1->...]转为[r0,r1,r2,...]
 ##### dataloader:
 ###### dataloader.py
 **提供了将数据转为属于torch.Dataset类的TripleDataset类,其对输入的Dataset中1.类进行独热编码,并按照超参数概率进行头实体,尾实体,关系进行替换,最后__getitem__()返回正例和对应的负例
@@ -48,10 +50,10 @@ Evaluation类为评估函数,用于评估训练好向量的质量
 **##### model:**
 ###### CKRL.py
 CKRL.py提供了CKRL类,为论文中CKRL框架,此为继承自nn.Module容器,此容器可以对dataloader.py中构造的nn.Dataset类转为nn.Dataloader类输入此model后输出为论文中L公式(即损失函数,未完成)
-1. [x] scoreOp方法即对输入的三元组算论文中能量函数E
-2. [x] normalizeEmbedding方法用为对最后embed后的向量进行归一化操作,防止反向传播出现梯度问题
-3. [x] initialWeight方法用于在每次训练前可将原先embed好后的向量保存文件赋给nn.embedding对象,继承原来训练
-4. [ ] (!!!未完成!!!) forward方法让模型输入论文中的损失函数,后续在Train.py中直接对模型输入进行optimizer优化即可
+1. scoreOp方法即对输入的三元组算论文中能量函数E
+2. normalizeEmbedding方法用为对最后embed后的向量进行归一化操作,防止反向传播出现梯度问题
+3. initialWeight方法用于在每次训练前可将原先embed好后的向量保存文件赋给nn.embedding对象,继承原来训练
+4. forward方法让模型输入论文中的损失函数,后续在Train.py中直接对模型输入进行optimizer优化即可
 
 _note:initialWeight加载先前训练embed格式为Train.py中的savemodel方法所写格式,为
 
@@ -66,11 +68,11 @@ entity_name\t××××,××××,××××,××××,......  (××××为float的数字)
 提供了TrainConfig类,此类里的类属性存放了Train.py中所需要的参数
 ###### Train.py
 提供了训练集和验证集的dataloader制作方法，以及一个TrainTriples类,此类中提供了如下方法
-1. [x] creat_data方法为调用此页中的训练集和验证集dataloader制作方法制作了两个训练用和验证用的Dataloader类实例对象
-2. [ ] (!!未完成！！)creat_model方法为调用CKRL.py,创造了一个继承自nn.Model的CKRL类实例对象,其输入为DataLoader类实例,输出为L
-3. [x] load_pretrain_embedding方法调用CKRL.py的initialWeight方法,在fit方法执行前执行此方法可以将指定路径下训练好的向量加载
-4. [x] load_pretrain_model方法将先前fit中执行savemodel方法存放的文件路径加载到此次训练中
-5. [ ] (!!未完成！！)
+1. creat_data方法为调用此页中的训练集和验证集dataloader制作方法制作了两个训练用和验证用的Dataloader类实例对象
+2. creat_model方法为调用CKRL.py,创造了一个继承自nn.Model的CKRL类实例对象,其输入为DataLoader类实例,输出为L
+3. load_pretrain_embedding方法调用CKRL.py的initialWeight方法,在fit方法执行前执行此方法可以将指定路径下训练好的向量加载
+4. load_pretrain_model方法将先前fit中执行savemodel方法存放的文件路径加载到此次训练中
+5. fit方法
 
 
 

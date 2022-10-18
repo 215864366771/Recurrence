@@ -190,7 +190,7 @@ class Evaluation:
 		relation = np.take(kwargs["relationEmbed"], indices=relation, axis=0)
 		# tail = np.take(kwargs["entityEmbed"], indices=tail, axis=0)
 		# Calculate the similarity, sort the score and get the rank
-		simScore = self.calSimilarity(head + relation, kwargs["entityEmbed"], simMeasure=simMeasure)  #||head+relation- l_embedded||
+		simScore = self.L2_calSimilarity(head + relation, kwargs["entityEmbed"])  #||head+relation- l_embedded||
 		ranks = self.calRank(simScore, tail, simMeasure=simMeasure)
 		return ranks
 

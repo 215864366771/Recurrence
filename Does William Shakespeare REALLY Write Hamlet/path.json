@@ -11,8 +11,7 @@
     },
    "result_path": {
      "model_path":"./result/model/",
-     "entity_embedded_file":"./result/embed/entityEmbedding.txt",
-     "relation_embedded_file": "./result/embed/relationEmbedding.txt",
+     "embedded_path":"./result/embed",
      "summary_dir": "./result/summary/CKRL/"
 
 

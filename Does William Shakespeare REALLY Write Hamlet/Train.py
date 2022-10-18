@@ -61,7 +61,7 @@ class TrainTriples:
 
     def creat_data(self):
         print("="*20+"INFO : Prepare dataloader"+"="*20)
-        self.dataloader = prepare_dataloader(self.args)
+        self.dataloader = prepare_dataloader(self.args,0,0,0,0)
         self.evalloader = prepare_eval_dataloader(self.args)
         self.entityDict = self.data_utils.entity_id_dict
         self.relationDict = self.data_utils.relation_id_dict
@@ -80,7 +80,7 @@ class TrainTriples:
             print("ERROR : No model named %s"%self.args.modelname)
             exit(1)
         if self.args.usegpu:
-            with torch.cuda.device(self.args.gpunum):
+            with torch.cuda.device(0):
                 self.model.cuda()
 
     def load_pretrain_embedding(self):
@@ -145,7 +145,7 @@ class TrainTriples:
                 for posX, negX in self.dataloader:
                     # Allocate tensor to devices
                     if self.args.usegpu:
-                        with torch.cuda.device(self.args.gpunum):
+                        with torch.cuda.device(0):
                             posX = Variable(torch.LongTensor(posX).cuda())
                             negX = Variable(torch.LongTensor(negX).cuda())
                     else:
@@ -159,9 +159,9 @@ class TrainTriples:
                     一般loss = nn.BCELoss()
                     loss(score,target)这个loss也是由nn.module写的,forward所return回的值则是loss,所以这里直接model返回CKRL的Loss(en)进行优化即可
                     """
-                    loss = self.model(posX, negX)
+                    loss = self.model(posX,negX,alpha=0.9,beta=0.0001,sigma=0.8,lambda1=1.5,lambda2=0.1,lambda3=0.4)
                     if self.args.usegpu:
-                        lossVal = loss.cpu().item()
+                        lossVal = loss.cuda().item()
                     else:
                         lossVal = loss.item()
 
@@ -241,7 +241,7 @@ if __name__ == "__main__":
     model = TrainTriples(args)
     model.creat_data()
     model.creat_model()
-    #confirm whether to use pre-train TransE embedding
+    #confirm whether to use pre-train  embedding
     if args.loadembed:
         model.load_pretrain_embedding()
     model.fit()

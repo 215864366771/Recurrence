@@ -19,7 +19,6 @@ class Networkx_utils:
 
         self.make_degrees_dict = lambda x: {tuple[0]: tuple[1] for tuple in x}
 
-
     def k_shell(self):
         """
         根据Kshell算法计算节点的重要性
@@ -49,7 +48,7 @@ class Networkx_utils:
             ks += 1
         return importance_dict
 
-    def found_path(self,h,t):
+    def search_path(self,h:int,t:int):
         """
         :param graph: nx的graph对象
         :param h:头实体编码
@@ -59,8 +58,11 @@ class Networkx_utils:
         all_simple_paths_iter = nx.all_simple_paths(self.graph, source=h, target=t)
         return list(all_simple_paths_iter)
 
-
-    def PCRA(self,p_i):
+    def PCRA(self,p_i:list):
+        """
+        :param p_i: 路径列表
+        :return:此路径下传到尾实体t的资源量R(h,r,t)
+        """
         """
         E_l_list = list(self.graph.nodes())
         E_l_list.remove(h)
@@ -78,12 +80,37 @@ class Networkx_utils:
             resource *= 1/node_out_degree
         return resource  #从此路径到达尾实体的资源量
 
+    def search_relation(self,p_i:list):
+        '''
+        r_list = p_i_list.pop(0)
+        r = self.graph[r_list[0]][r_list[1]]["weight"]
+        if len(p_i_list) != 0:
+            for p_i in p_i_list:
+                r_i_k_list = []
+                for idx in range(len(p_i)-1):
+                    e_i_k = p_i[idx]
+                    e_i_k_next = p_i[idx+1]
+                    r_i_k = self.graph[e_i_k][e_i_k_next]["weight"]
+                    r_i_k_list.append(r_i_k)
+        '''
+        r_i_k_list = []
+        for idx in range(len(p_i) - 1):
+            e_i_k = p_i[idx]
+            e_i_k_next = p_i[idx + 1]
+            r_i_k = self.graph[e_i_k][e_i_k_next]["weight"]
+            r_i_k_list.append(r_i_k)
+        return r_i_k_list
+
 
 if __name__ == "__main__":
 
     print("="*20+"test"+"="*20)
     graph = nx.DiGraph()
     graph.add_weighted_edges_from(ebunch_to_add=[(1,4,1), (2,4,1), (3,4,1), (4,5,1), (5,6,1), (5,7,1), (3,5,1), (6,7,1),(1,2,1),(2,3,1),(1,3,1),(3,6,1),(6,5,1)])
+    paths = nx.all_simple_paths(graph, source=1, target=4)
+    #for path in paths:
+        #print(list(path))
+
     #print(list(nx.all_simple_paths(graph, source=1, target=4)))
     #nx.draw(graph,node_size=300,width=0.2,with_labels=True) #pip install decorator==4.4.2
     #plt.show()
@@ -96,10 +123,12 @@ if __name__ == "__main__":
     arg = Data_utils(entity_id_file_path=base_path["entity_id_file_path"],relation_id_file_path=base_path["relation_id_file_path"])
     nx_utils = Networkx_utils(data_file_path=base_path["train_data_file_path"],args=arg)
     #print(nx_utils.node_out_degree_dict)
-    #print(type(nx_utils.found_path(h=13692,t=4132)))
+    print(nx_utils.search_path(h=1,t=4132))
     #print(nx.all_simple_paths(graph, source=13692, target=4132))
-    for path in nx_utils.found_path(h=13692,t=4132):
-        print(nx_utils.PCRA(path))
+    #print(nx_utils.search_path(h=14110,t=4609))
+    #for path in nx_utils.search_path(h=14110,t=4132):
+        #print("path",path)
+        #print(nx_utils.PCRA(path))
     #path = nx_utils.found_path(h=13692,t=4132)
     #print(path)
     #for p_i in path:

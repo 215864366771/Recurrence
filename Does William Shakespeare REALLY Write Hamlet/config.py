@@ -1,3 +1,4 @@
+# coding=gb2312
 # 王冬虎
 # 学习时间:2022/10/11 14:32
 import os
@@ -7,7 +8,7 @@ import torch
 config_json_date = open("path.json", "r", encoding="gb2312")
 json_config = json.loads(config_json_date.read())
 base_path_dict = json_config["base_path"]
-load_path_dict = json_config["load_path_dict"]
+load_path_dict = json_config["result_path"]
 
 class TrainConfig:
 	def __init__(self):
@@ -19,11 +20,11 @@ class TrainConfig:
 		self.valid_data_file_path = base_path_dict["valid_data_file_path"]
 		self.entity_vec_file_path = base_path_dict["entity_vec_file_path"]
 		self.relation_vec_file_path = base_path_dict["relation_vec_file_path"]
-		self.modelpath = load_path_dict["model"]
+		self.modelpath = load_path_dict["model_path"]
 		self.summarydir = load_path_dict["summary_dir"]
-
+		self.embedpath = load_path_dict["embedded_path"]
 		# Dataloader arguments
-		self.batchsize = 9
+		self.batchsize = 10
 		self.shuffle = True
 		self.numworkers = 0
 		self.droplast = False
@@ -50,7 +51,8 @@ class TrainConfig:
 		self.simmeasure = "L2"
 		# Save model arguments
 		self.modelsave = "param"
-
+		# Load Pretrain Embedding
+		self.loadembed = False
 
 
 

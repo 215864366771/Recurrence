@@ -21,17 +21,18 @@ class CKRL(nn.Module):
         assert (L == 1 or L == 2)
         self.L = L
         self.distfn = nn.PairwiseDistance(L)
+        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         #utils object
-        self.nx_utils = Networkx_utils(data_file_path=data_file_path, args=self.data_utils)
         self.data_utils = Data_utils(entity_id_file_path,relation_id_file_path)
+        self.nx_utils = Networkx_utils(data_file_path=data_file_path, args=self.data_utils)
         #embedding object
         self.entityEmbedding,self.relationEmbedding = self.data_utils.get_embedding_object(self.w2v_dim)
-
 
         # γ ( used to L = ∑ ∑ max( (E(h,r,l)-E(h',r',l')+γ)*C(h,r,l) ), 0) )
         self.margin = margin
         # LT Initial value
         self.LT = 1
+        self.sigmoid = nn.Sigmoid()
 
     '''
     get E(h,r,l) and E(h',r',l')-----------------------------------------
@@ -88,58 +89,65 @@ class CKRL(nn.Module):
     ==> β:(β>0)a hyper-parameters that control the ascend or descend pace of local triple confidence,with the assurance that LT (h, r, t) ∈ (0, 1]
     ==> LT:(LT (h, r, t) ∈ (0, 1]) Local Triple Confidence
     '''
-    def forward(self, posX, negX,alpha,beta,sigma):
-        size = posX.size()[0]   #batch size
+    def forward(self, posX, negX,alpha,beta,sigma,lambda1,lambda2,lambda3):
+        size = posX.size()[0]               #batch size
         #get E(h,r,t) score and E(h',r',t') score
         posEScore = self.scoreOp(posX)
         negEScore = self.scoreOp(negX)
 
         #get C(h,r,t) score-------------------------------
         #Local Triple Confidence:LT
-        Q = -(posEScore - negEScore + self.margin)
+        Q = -(posEScore - negEScore + self.margin).cpu()
 
         LT = np.ones(size)  #Initial LT value = [1,1,1,1.....] size=(batchsize,1)
         def judge_LT(q,lt):
             mask_array = torch.gt(q,torch.zeros(size,1)).numpy()
             for mask_id,mask in enumerate(mask_array):
-                if mask:
+                if mask.any():
                     lt[mask_id] += beta
                 else:
                     lt[mask_id] *= alpha
             return torch.from_numpy(lt)
-        LT = judge_LT(Q,LT)        #size = (batch_size,1) ,the vector of this batch's LT
+        LT = judge_LT(Q,LT).cuda()  #size = (batch_size,1) ,the vector of this batch's LT
 
         #judge_LT = np.frompyfunc(lambda Q:[alpha*LT,LT+beta][Q.gt(0)],1,1)  #α=0.9,β=0.0001,此函数类似于pd.apply
 
 
         #Global Path Confidence:Prior Path Confidence PP
-        head_batch_array,relation_batch_array,tail_batch_array = torch.chunk(input=posX,chunks=3,dim=1)
-        head_batch_array,tail_batch_array = head_batch_array.numpy(),tail_batch_array.numpy()
+        head_batch_tensor,relation_batch_tensor,tail_batch_tensor = torch.chunk(input=posX,chunks=3,dim=1)
+        head_batch_array,relation_batch_array,tail_batch_array = head_batch_tensor.cpu().numpy(),relation_batch_tensor.cpu().numpy(),tail_batch_tensor.cpu().numpy()
         PP_i_list = []
-        for head,tail in zip(head_batch_array,tail_batch_array):
+        AP_i_list = []
+        for head,relation,tail in zip(head_batch_array,relation_batch_array,tail_batch_array):     # one sample's head and tail
             PP_i = 0
-            p_i_list = self.nx_utils.found_path(head,tail)
+            AP_i = 0
+            p_i_list = self.nx_utils.search_path(int(head),int(tail))
+            r_embedding = torch.squeeze(self.relationEmbedding(torch.tensor(relation).cuda()),dim=1)
             for p_i in p_i_list:
                 Q_PP = sigma + (1 - sigma) * 1 / len(p_i_list)
                 R_pi = self.nx_utils.PCRA(p_i)
                 PP_i += Q_PP*R_pi
+
+                r_i_tensor = torch.tensor(self.nx_utils.search_relation(p_i)).cuda()
+                r_i_embedding = torch.squeeze(self.relationEmbedding(r_i_tensor), dim=1)
+                Q_AP = float(self.distfn(r_embedding,torch.sum(r_i_embedding, dim=0)))
+                if Q_AP != 0:
+                    AP_i += R_pi/Q_AP
+            AP_i = self.sigmoid(torch.tensor(AP_i))
             PP_i_list.append(PP_i)
-        PP = torch.tensor(PP_i_list)
+            AP_i_list.append(AP_i)
+
+        PP = torch.tensor(PP_i_list).cuda()        # a batch's PP tensor
 
         #Global Path Confidence:Adaptive Path Confidence AP
-        relation_embedding = torch.squeeze(self.relationEmbedding(relation_batch_array), dim=1)
+        AP = torch.tensor(AP_i_list).cuda()        # a batch's AP tensor
 
-
-
-
-
-
-
-
+        #Triple confidence C(h,r,t)
+        C = (lambda1*LT + lambda2*PP + lambda3*AP)  # a batch's C(h,r,t)
 
         # Get margin ranking loss
         # L= ∑ max(posScore-negScore+margin, 0)*C(h,r,l)
-        return torch.sum(F.relu(input=posEScore-negEScore+self.margin)) / size
+        return torch.sum(F.relu(input=(posEScore-negEScore+self.margin)*C)) / size
 
     '''
     Used to load pretraining entity and relation embedding.

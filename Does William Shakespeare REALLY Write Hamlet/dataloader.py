@@ -132,6 +132,6 @@ class TripleDataset(Dataset):
         batchsize ¡Á 3(h,r,t) ¡Á 100(embedding dim)
         """
         if hasattr(self, "negDf"):
-            return np.array(self.data_df.iloc[item,:3]), np.array(self.negDf.iloc[item,:3])
+            return np.array(self.data_df.iloc[item,:3]).astype(np.int64), np.array(self.negDf.iloc[item,:3]).astype(np.int64)
         else:
-            return np.array(self.data_df.iloc[item,:3])
+            return np.array(self.data_df.iloc[item,:3]).astype(np.int64)
