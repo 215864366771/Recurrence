@@ -31,8 +31,9 @@ class CKRL(nn.Module):
         # γ ( used to L = ∑ ∑ max( (E(h,r,l)-E(h',r',l')+γ)*C(h,r,l) ), 0) )
         self.margin = margin
         # LT Initial value
-        self.LT = 1
         self.sigmoid = nn.Sigmoid()
+
+        #self.all_LT = np.ones(self.dataloader.__len__)
 
     '''
     get E(h,r,l) and E(h',r',l')-----------------------------------------
@@ -90,7 +91,7 @@ class CKRL(nn.Module):
     ==> sigma:a hyper-parameter of Q_pp for smoothing.default is 0.8
     ==> lambda1,lambda2,lambda3:the hyper-parameters for control overall triple confidence,default is 1.5,0.1,0.4
     '''
-    def forward(self, posX, negX,alpha,beta,sigma,lambda1,lambda2,lambda3):
+    def forward(self,posX,negX,LT,alpha,beta,sigma,lambda1,lambda2,lambda3):
         size = posX.size()[0]               #batch size
         #get E(h,r,t) score and E(h',r',t') score
         posEScore = self.scoreOp(posX)
@@ -100,15 +101,15 @@ class CKRL(nn.Module):
         #Local Triple Confidence:LT
         Q = -(posEScore - negEScore + self.margin).cpu()
 
-        LT = np.ones(size)  #Initial LT value = [1,1,1,1.....] size=(batchsize,1)
+        #LT = np.ones(size)  #Initial LT value = [1,1,1,1.....] size=(batchsize,1)
         def judge_LT(q,lt):
-            mask_array = torch.gt(q,torch.zeros(size,1)).numpy()
-            for mask_id,mask in enumerate(mask_array):
-                if mask.any():
-                    lt[mask_id] += beta
+            mask_tensor = torch.gt(q,torch.zeros(size,1))
+            for mask_id,mask in enumerate(mask_tensor):
+                if mask.any():                             #return mask = tensor(bool),use mask.any()
+                    lt[mask_id] += torch.tensor(beta)
                 else:
-                    lt[mask_id] *= alpha
-            return torch.from_numpy(lt)
+                    lt[mask_id] *= torch.tensor(alpha)
+            return lt
         LT = judge_LT(Q,LT).cuda()  #size = (batch_size,1) ,the vector of this batch's LT
 
         #judge_LT = np.frompyfunc(lambda Q:[alpha*LT,LT+beta][Q.gt(0)],1,1)  #α=0.9,β=0.0001,此函数类似于pd.apply

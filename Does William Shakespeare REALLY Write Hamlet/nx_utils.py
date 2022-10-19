@@ -98,14 +98,14 @@ if __name__ == "__main__":
 
     print("="*20+"test"+"="*20)
     graph = nx.DiGraph()
-    graph.add_weighted_edges_from(ebunch_to_add=[(1,4,1), (2,4,1), (3,4,1), (4,5,1), (5,6,1), (5,7,1), (3,5,1), (6,7,1),(1,2,1),(2,3,1),(1,3,1),(3,6,1),(6,5,1)])
+    graph.add_weighted_edges_from(ebunch_to_add=[(1,4,1), (2,4,1), (3,4,1), (4,5,1), (5,6,1), (5,7,1), (1,2,1), (2,3,1),(3,4,1),(4,5,1),(4,6,1),(5,6,1),(5,7,1)])
     paths = nx.all_simple_paths(graph, source=1, target=4)
     #for path in paths:
         #print(list(path))
 
     #print(list(nx.all_simple_paths(graph, source=1, target=4)))
-    #nx.draw(graph,node_size=300,width=0.2,with_labels=True) #pip install decorator==4.4.2
-    #plt.show()
+    nx.draw(graph,node_size=300,width=0.2,with_labels=True) #pip install decorator==4.4.2
+    plt.show()
 
     #node_pagerank_dict = nx.pagerank(graph,nstart=)
 
@@ -115,7 +115,7 @@ if __name__ == "__main__":
     arg = Data_utils(entity_id_file_path=base_path["entity_id_file_path"],relation_id_file_path=base_path["relation_id_file_path"])
     nx_utils = Networkx_utils(data_file_path=base_path["train_data_file_path"],args=arg)
     #print(nx_utils.node_out_degree_dict)
-    print(nx_utils.search_path(h=1,t=4132))
+    #print(nx_utils.search_path(h=13692,t=4132))
     #print(nx.all_simple_paths(graph, source=13692, target=4132))
     #print(nx_utils.search_path(h=14110,t=4609))
     #for path in nx_utils.search_path(h=14110,t=4132):

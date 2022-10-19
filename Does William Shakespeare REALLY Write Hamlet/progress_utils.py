@@ -172,7 +172,7 @@ class Evaluation:
 	def MREvaluation_CKRL(self,evalloader: dataloader,simMeasure="dot",**kwargs):
 		R = 0
 		N = 0
-		for tri in evalloader:
+		for tri,_ in evalloader:
 			# tri : shape(N, 3)
 			# head : shape(N, 1) ==> shape(N)
 			# relation : shape(N, 1) ==> shape(N)

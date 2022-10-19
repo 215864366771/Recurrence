@@ -142,15 +142,17 @@ class TrainTriples:
                 GLOBALEPOCH += 1
                 STEP = 0
                 print("="*20+"EPOCHS(%d/%d)"%(epoch+1, EPOCHS)+"="*20)
-                for posX, negX in self.dataloader:
+                for posX, negX,LT in self.dataloader:
                     # Allocate tensor to devices
                     if self.args.usegpu:
                         with torch.cuda.device(0):
                             posX = Variable(torch.LongTensor(posX).cuda())
                             negX = Variable(torch.LongTensor(negX).cuda())
+                            LT = LT.cuda()   #LT can't backward
                     else:
                         posX = Variable(torch.LongTensor(posX))
                         negX = Variable(torch.LongTensor(negX))
+
                     # Normalize the embedding if necessary
                     self.model.normalizeEmbedding()
 
@@ -159,7 +161,7 @@ class TrainTriples:
                     一般loss = nn.BCELoss()
                     loss(score,target)这个loss也是由nn.module写的,forward所return回的值则是loss,所以这里直接model返回CKRL的Loss(en)进行优化即可
                     """
-                    loss = self.model(posX,negX,alpha=0.9,beta=0.0001,sigma=0.8,lambda1=1.5,lambda2=0.1,lambda3=0.4)
+                    loss = self.model(posX,negX,LT,alpha=0.9,beta=0.0001,sigma=0.8,lambda1=1.5,lambda2=0.1,lambda3=0.4)
                     if self.args.usegpu:
                         lossVal = loss.cuda().item()    #this batch's valation
                     else:

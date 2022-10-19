@@ -38,7 +38,7 @@ class TripleDataset(Dataset):
                                                      "relation":self.relation_id_dict,
                                                      "tail":self.entity_id_dict})
 
-
+        self.all_LT = torch.ones((self.data_df.shape[0],1))
     def generateNegSamples(self, repProba=0.5, exProba=0.5, repSeed=0, exSeed=0, headSeed=0, tailSeed=0):
         """
         按参数规则生成负例集T(h',r',l')赋给类属性negDf
@@ -132,6 +132,6 @@ class TripleDataset(Dataset):
         batchsize × 3(h,r,t) × 100(embedding dim)
         """
         if hasattr(self, "negDf"):
-            return np.array(self.data_df.iloc[item,:3]).astype(np.int64), np.array(self.negDf.iloc[item,:3]).astype(np.int64)
+            return np.array(self.data_df.iloc[item,:3]).astype(np.int64), np.array(self.negDf.iloc[item,:3]).astype(np.int64),self.all_LT[item]
         else:
-            return np.array(self.data_df.iloc[item,:3]).astype(np.int64)
+            return np.array(self.data_df.iloc[item,:3]).astype(np.int64),self.all_LT[item]

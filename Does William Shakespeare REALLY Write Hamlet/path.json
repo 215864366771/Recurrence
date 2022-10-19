@@ -3,7 +3,7 @@
      "entity_id_file_path": "FB15k-237/entity2id.txt",
      "relation_id_file_path": "FB15k-237/relation2id.txt",
      "train_data_file_path":"FB15k-237/few simple dataset/train.txt",
-     "valid_data_file_path": "FB15k-237/divided dataset/valid.txt",
+     "valid_data_file_path": "FB15k-237/few simple dataset/valid.txt",
      "test_data_file_path": "FB15k-237/divided dataset/test.txt",
      "entity_vec_file_path": "FB15k-237/pretrain vector/FB15K_TransE_Entity2Vec_100.txt",
      "relation_vec_file_path": "FB15k-237/pretrain vector/FB15K_TransE_Relation2Vec_100.txt",
@@ -13,9 +13,5 @@
      "model_path":"./result/model/",
      "embedded_path":"./result/embed",
      "summary_dir": "./result/summary/CKRL/"
-
-
    }
 }
-
-

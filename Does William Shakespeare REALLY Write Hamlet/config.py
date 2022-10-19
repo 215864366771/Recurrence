@@ -24,7 +24,7 @@ class TrainConfig:
 		self.summarydir = load_path_dict["summary_dir"]
 		self.embedpath = load_path_dict["embedded_path"]
 		# Dataloader arguments
-		self.batchsize = 10
+		self.batchsize = 100
 		self.shuffle = True
 		self.numworkers = 0
 		self.droplast = False
@@ -33,16 +33,16 @@ class TrainConfig:
 		# Model and training general arguments
 		self.modelname = "CKRL"
 		self.CKRL = {
-			"EmbeddingDim": 100,
+			"EmbeddingDim": 50,
 			"Margin": 1.0,
 			"L": 2}
 		self.usegpu = torch.cuda.is_available()
 		self.premodel = False
 		self.weightdecay = 0
 
-		self.epochs = 5
+		self.epochs = 1000
 		self.evalepoch = 1
-		self.learningrate = 0.01
+		self.learningrate = 0.001
 		self.lrdecay = 0.96
 		self.lrdecayepoch = 5
 		self.optimizer = "Adam"
